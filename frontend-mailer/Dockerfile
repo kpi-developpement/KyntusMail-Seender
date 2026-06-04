@@ -1,5 +1,5 @@
-# Étape 1 : Build
-FROM node:18-alpine AS builder
+# Étape 1 : Build (Beddelna 18 b 20)
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -9,8 +9,8 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-# Étape 2 : Production
-FROM node:18-alpine AS runner
+# Étape 2 : Production (Beddelna 18 b 20)
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
 # 🚨 Forçage dyal l'Port jdid f l'environnement
