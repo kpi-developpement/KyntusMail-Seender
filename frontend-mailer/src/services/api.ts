@@ -1,6 +1,9 @@
 import { Anomalie } from '../types/anomalie';
 
-const API_URL = 'http://localhost:4778/api';
+// 🚨 THE FIX: Frappe Chirurgicale 3la Localhost
+// Kan-9raw l'URL mn l'environnement (Docker), awla kan-pointiw nichan 3la l'serveur f l'production.
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.10.10.50:4778';
+const API_URL = `${BASE_URL}/api`;
 
 export const anomalieService = {
   getAll: async (): Promise<Anomalie[]> => {
@@ -45,6 +48,7 @@ export const excelService = {
     return response.text();
   },
 };
+
 export interface MailHistory {
   id: number;
   partenaire: string;
