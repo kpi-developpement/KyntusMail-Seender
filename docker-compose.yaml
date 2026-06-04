@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./Workflow 
+      dockerfile: Dockerfile
+    container_name: mailos_backend_prod
+    restart: unless-stopped
+    ports:
+      - "4778:4778"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.10.10.50:5432/kyntus_db
+      - SPRING_DATASOURCE_USERNAME=kyntus_user
+      - SPRING_DATASOURCE_PASSWORD=kyntus_password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SERVER_PORT=4778
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=500MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=500MB
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - mailos-network
+
+  frontend:
+    build:
+      context: ./frontend 
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.50:4778}
+    container_name: mailos_frontend_prod
+    restart: unless-stopped
+    ports:
+      - "1193:1193" # 🚨 L'PORT L'HARREB HNA
+    environment:
+      - PORT=1193
+    depends_on:
+      - backend
+    networks:
+      - mailos-network
+
+networks:
+  mailos-network:
+    driver: bridge
