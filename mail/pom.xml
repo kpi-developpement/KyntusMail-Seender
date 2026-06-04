@@ -5,8 +5,9 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.6</version>
-		<relativePath/> </parent>
+		<version>3.3.0</version> <!-- Rditha 3.3.0 hit 4.0.6 ba9i ma-kaynach -->
+		<relativePath/>
+	</parent>
 	<groupId>com.seender</groupId>
 	<artifactId>mail</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -63,6 +64,18 @@
 
 	<build>
 		<plugins>
+			<!-- 🚨 FIX: Disable resource filtering for .properties files to avoid MalformedInputException -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<nonFilteredFileExtensions>
+						<nonFilteredFileExtension>properties</nonFilteredFileExtension>
+					</nonFilteredFileExtensions>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
