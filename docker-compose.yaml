@@ -30,7 +30,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend-mail
+      context: ./frontend-mailer
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.50:4778/api}
