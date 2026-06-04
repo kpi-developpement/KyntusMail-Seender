@@ -3,20 +3,24 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./mail #  L'dossier s7i7 dyal l'Backend
+      context: ./mail 
       dockerfile: Dockerfile
     container_name: mailos_backend_prod
     restart: unless-stopped
     ports:
       - "4778:4778"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.10.10.50:5432/kyntus_db
-      - SPRING_DATASOURCE_USERNAME=kyntus_user
-      - SPRING_DATASOURCE_PASSWORD=kyntus_password
+      # 🚨 L'FIX L-KBIIR: Beddlna 'kyntus_db' b 'mailingdb' !
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.10.10.50:5432/mailingdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=waeloujdiastral481123456
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SERVER_PORT=4778
       - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=500MB
       - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=500MB
+      # 🛡️ THE SHIELD: Throttling mn Docker l'HikariCP
+      - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=2
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
     deploy:
       resources:
         limits:
@@ -26,14 +30,14 @@ services:
 
   frontend:
     build:
-      context: ./frontend-mailer #  L'dossier s7i7 dyal l'Frontend
+      context: ./frontend-mail
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.50:4778}
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.50:4778/api}
     container_name: mailos_frontend_prod
     restart: unless-stopped
     ports:
-      - "1193:1193" # L'PORT L'HARREB
+      - "1193:1193"
     environment:
       - PORT=1193
     depends_on:
