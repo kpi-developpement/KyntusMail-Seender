@@ -1,0 +1,2 @@
+netstat -ano | findstr :4778
+taskkill /PID 16524 /F
