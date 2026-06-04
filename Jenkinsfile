@@ -48,7 +48,7 @@ pipeline {
         success {
             echo "========================================================"
             echo "✅ DÉPLOIEMENT MAILOS RÉUSSI !"
-            echo "🌐 Frontend: http://10.10.10.50:1193"  // L'PORT Jdid L'Harreb
+            echo "🌐 Frontend: http://10.10.10.50:1193"  
             echo "⚙️ Backend: http://10.10.10.50:4778"
             echo "🛡️ BASE DE DONNÉES SÉCURISÉE (Volume Intact 100%)"
             echo "========================================================"

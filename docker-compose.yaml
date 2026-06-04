@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./Workflow 
+      context: ./mail # 🚨 L'dossier s7i7 dyal l'Backend
       dockerfile: Dockerfile
     container_name: mailos_backend_prod
     restart: unless-stopped
@@ -26,14 +26,14 @@ services:
 
   frontend:
     build:
-      context: ./frontend 
+      context: ./frontend-mail # 🚨 L'dossier s7i7 dyal l'Frontend
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.50:4778}
     container_name: mailos_frontend_prod
     restart: unless-stopped
     ports:
-      - "1193:1193" # 🚨 L'PORT L'HARREB HNA
+      - "1193:1193" # L'PORT L'HARREB
     environment:
       - PORT=1193
     depends_on:
