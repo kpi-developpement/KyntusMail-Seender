@@ -16,13 +16,22 @@ pipeline {
             }
         }
 
-        stage('💥 Frappe Chirurgicale (Graceful Shutdown)') {
+        stage('☢️ Frappe Nucléaire (Sniper DB)') {
             steps {
                 script {
-                    echo "=> [ÉTAPE 2] Arrêt GRACIEUX des anciens containers..."
-                    sh "docker stop -t 15 mailos_backend_prod || true"
-                    sh "docker stop -t 10 mailos_frontend_prod || true"
-                    sh "docker rm mailos_backend_prod mailos_frontend_prod || true"
+                    echo "=> [ÉTAPE 2.5] Diagnostic et Nettoyage ciblé des connexions..."
+                    
+                    // 1. L'Audit: N-choufo chkoun li m-bloki l'Base de données
+                    echo "📊 STATISTIQUES DES CONNEXIONS PAR BASE DE DONNÉES :"
+                    sh '''
+                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "SELECT datname, count(*) FROM pg_stat_activity GROUP BY datname;" || echo "⚠️ Impossible de lire les stats."
+                    '''
+
+                    // 2. Le Nettoyage: Kan-9tlou GHIR l-connexions dyal mailingdb w kyntus_db (0% risque 3la les autres)
+                    echo "🧹 Libération des connexions pour MailOS..."
+                    sh '''
+                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname IN ('mailingdb', 'kyntus_db') AND pid <> pg_backend_pid();" || echo "⚠️ Échec du nettoyage."
+                    '''
                 }
             }
         }
