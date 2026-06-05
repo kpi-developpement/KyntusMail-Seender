@@ -16,11 +16,27 @@ pipeline {
             }
         }
 
-        stage('💥 Frappe Chirurgicale (Risk Management)') {
+        stage('💥 Frappe Chirurgicale (Graceful Shutdown)') {
             steps {
                 script {
-                    echo "=> [ÉTAPE 2] N-tiy7ou GHIR l-containers dyal MailOS..."
-                    sh "docker rm -f mailos_backend_prod mailos_frontend_prod || true"
+                    echo "=> [ÉTAPE 2] Arrêt GRACIEUX des anciens containers..."
+                    sh "docker stop -t 15 mailos_backend_prod || true"
+                    sh "docker stop -t 10 mailos_frontend_prod || true"
+                    sh "docker rm mailos_backend_prod mailos_frontend_prod || true"
+                }
+            }
+        }
+
+        stage('🛡️ Nettoyage Sécurisé (Anti-Zombies)') {
+            steps {
+                script {
+                    echo "=> [ÉTAPE 2.5] Libération SÉCURISÉE des connexions inactives dans PostgreSQL..."
+                    echo "=> 0% Risque : On ne touche pas aux données, on ferme juste les connexions réseau 'Idle' (endormies)."
+                    
+                    // 🚨 THE SHIELD FIX: Kan-9tlou GHIR l-connexions li 'idle' (n3ssin). L'Data w l-volumes b3ad w trankil.
+                    sh '''
+                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle' AND pid <> pg_backend_pid();" || true
+                    '''
                 }
             }
         }
@@ -37,19 +53,17 @@ pipeline {
         stage('🔍 Audit Logs (Le Radar)') {
             steps {
                 script {
-                    echo "=> ⏳ Attente de 15 secondes bach Spring Boot y-demarri awla y-crashi..."
-                    sleep time: 15, unit: 'SECONDS'
+                    echo "=> ⏳ Attente de 25 secondes bach Spring Boot y-demarri..."
+                    sleep time: 25, unit: 'SECONDS'
 
                     echo "=========================================================="
                     echo "=> ⚙️ EXTRACTION LOGS BACKEND (Spring Boot - 150 lignes) <="
                     echo "=========================================================="
-                    // Kan-jibou l'logs dyal l'backend
                     sh "docker logs --tail 150 mailos_backend_prod || true"
 
                     echo "=========================================================="
                     echo "=> 🌐 EXTRACTION LOGS FRONTEND (Next.js - 50 lignes) <="
                     echo "=========================================================="
-                    // Kan-jibou l'logs dyal l'frontend
                     sh "docker logs --tail 50 mailos_frontend_prod || true"
                 }
             }
@@ -74,7 +88,7 @@ pipeline {
             echo "✅ DÉPLOIEMENT MAILOS RÉUSSI !"
             echo "🌐 Frontend: http://10.10.10.50:1193"
             echo "⚙️ Backend: http://10.10.10.50:4778"
-            echo "🛡️ BASE DE DONNÉES SÉCURISÉE (Volume Intact 100%)"
+            echo "🛡️ BASE DE DONNÉES SÉCURISÉE (Connexions fantômes libérées)"
             echo "========================================================"
         }
         failure {
