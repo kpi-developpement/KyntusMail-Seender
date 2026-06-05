@@ -16,36 +16,17 @@ pipeline {
             }
         }
 
-        stage('☢️ Frappe Nucléaire (Sniper DB)') {
+        stage('🛡️ Frappe Chirurgicale (Arrêt Gracieux)') {
             steps {
                 script {
-                    echo "=> [ÉTAPE 2.5] Diagnostic et Nettoyage ciblé des connexions..."
+                    echo "=> [ÉTAPE 2] Arrêt GRACIEUX des containers (Prévention des connexions Zombies)..."
                     
-                    // 1. L'Audit: N-choufo chkoun li m-bloki l'Base de données
-                    echo "📊 STATISTIQUES DES CONNEXIONS PAR BASE DE DONNÉES :"
-                    sh '''
-                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "SELECT datname, count(*) FROM pg_stat_activity GROUP BY datname;" || echo "⚠️ Impossible de lire les stats."
-                    '''
-
-                    // 2. Le Nettoyage: Kan-9tlou GHIR l-connexions dyal mailingdb w kyntus_db (0% risque 3la les autres)
-                    echo "🧹 Libération des connexions pour MailOS..."
-                    sh '''
-                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname IN ('mailingdb', 'kyntus_db') AND pid <> pg_backend_pid();" || echo "⚠️ Échec du nettoyage."
-                    '''
-                }
-            }
-        }
-
-        stage('🛡️ Nettoyage Sécurisé (Anti-Zombies)') {
-            steps {
-                script {
-                    echo "=> [ÉTAPE 2.5] Libération SÉCURISÉE des connexions inactives dans PostgreSQL..."
-                    echo "=> 0% Risque : On ne touche pas aux données, on ferme juste les connexions réseau 'Idle' (endormies)."
+                    // L'Arrêt gracieux: Kan-3tiw l'Spring Boot 15 secondes bash y-gta3 l'DB n9i
+                    sh "docker stop -t 15 mailos_backend_prod || true"
+                    sh "docker stop -t 10 mailos_frontend_prod || true"
                     
-                    // 🚨 THE SHIELD FIX: Kan-9tlou GHIR l-connexions li 'idle' (n3ssin). L'Data w l-volumes b3ad w trankil.
-                    sh '''
-                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle' AND pid <> pg_backend_pid();" || true
-                    '''
+                    echo "=> Suppression des anciens containers..."
+                    sh "docker rm mailos_backend_prod mailos_frontend_prod || true"
                 }
             }
         }
@@ -53,7 +34,8 @@ pipeline {
         stage('🚀 Build & Deploy (MailOS)') {
             steps {
                 script {
-                    echo "=> [ÉTAPE 3] Lancement dyal l'ecosysteme MailOS..."
+                    echo "=> [ÉTAPE 3] Lancement de l'écosystème MailOS..."
+                    // Build w Lancement b docker-compose
                     sh "docker compose up -d --build"
                 }
             }
@@ -62,13 +44,13 @@ pipeline {
         stage('🔍 Audit Logs (Le Radar)') {
             steps {
                 script {
-                    echo "=> ⏳ Attente de 25 secondes bach Spring Boot y-demarri..."
+                    echo "=> ⏳ Attente de 25 secondes bach Spring Boot y-connecta m3a PostgreSQL..."
                     sleep time: 25, unit: 'SECONDS'
 
                     echo "=========================================================="
-                    echo "=> ⚙️ EXTRACTION LOGS BACKEND (Spring Boot - 150 lignes) <="
+                    echo "=> ⚙️ EXTRACTION LOGS BACKEND (Spring Boot - 100 lignes) <="
                     echo "=========================================================="
-                    sh "docker logs --tail 150 mailos_backend_prod || true"
+                    sh "docker logs --tail 100 mailos_backend_prod || true"
 
                     echo "=========================================================="
                     echo "=> 🌐 EXTRACTION LOGS FRONTEND (Next.js - 50 lignes) <="
@@ -78,10 +60,10 @@ pipeline {
             }
         }
 
-        stage('🛡️ Clean Up (Images)') {
+        stage('🧹 Clean Up (Optimisation Serveur)') {
             steps {
                 script {
-                    echo "=> [ÉTAPE 4] Nettoyage dyal les images l-qdam..."
+                    echo "=> [ÉTAPE 4] Nettoyage des images Docker obsolètes..."
                     sh "docker image prune -f"
                 }
             }
@@ -90,18 +72,18 @@ pipeline {
 
     post {
         always {
-            echo "🏁 Fin de l'analyse des signaux. Vérifiez les logs ci-dessus."
+            echo "🏁 Fin de l'analyse. Le Radar a capturé les derniers signaux."
         }
         success {
             echo "========================================================"
-            echo "✅ DÉPLOIEMENT MAILOS RÉUSSI !"
+            echo "✅ DÉPLOIEMENT MAILOS RÉUSSI (100% SÉCURISÉ) !"
             echo "🌐 Frontend: http://10.10.10.50:1193"
-            echo "⚙️ Backend: http://10.10.10.50:4778"
-            echo "🛡️ BASE DE DONNÉES SÉCURISÉE (Connexions fantômes libérées)"
+            echo "⚙️ Backend:  http://10.10.10.50:4778"
+            echo "🛡️ Architecture: Spring Boot + Next.js (Pure CSS)"
             echo "========================================================"
         }
         failure {
-            echo "❌ ÉCHEC DU DÉPLOIEMENT."
+            echo "❌ ÉCHEC DU DÉPLOIEMENT. Vérifiez le Radar (Logs) ci-dessus."
         }
     }
 }
