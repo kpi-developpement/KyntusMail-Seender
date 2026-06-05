@@ -31,11 +31,9 @@ pipeline {
             steps {
                 script {
                     echo "=> [ÉTAPE 2.5] Forçage de la création de la base 'mailingdb' dans le serveur..."
-                    
-                    // 🚨 THE FIX: Kan-tconnectaw l'base par défaut (postgres) bach n-creyiw l'base dyalna. 
-                    // '|| true' bach ila kanet déjà kayna, l'pipeline ma-y-crachich.
+                    // 🚨 Kan-tconnectaw b les credentials s7a7 li jbdna mn l'serveur
                     sh '''
-                    docker run --rm -e PGPASSWORD="waeloujdiastral481123456" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U postgres -d postgres -c "CREATE DATABASE mailingdb;" || echo "✅ Info: La base 'mailingdb' existe déjà."
+                    docker run --rm -e PGPASSWORD="kyntus_password" postgres:15-alpine psql -h 10.10.10.50 -p 5432 -U kyntus_user -d kyntus_db -c "CREATE DATABASE mailingdb;" || echo "✅ Info: La base 'mailingdb' existe déjà."
                     '''
                 }
             }
@@ -50,21 +48,23 @@ pipeline {
             }
         }
 
-        stage('🔍 Audit Logs (Le Radar)') {
+        stage('🔍 Le Radar (Auto-Trigger & Logs)') {
             steps {
                 script {
-                    echo "=> ⏳ Attente de 25 secondes bach Spring Boot y-connecta m3a PostgreSQL..."
+                    echo "=> ⏳ Attente de 25 secondes bach Spring Boot y-demarri mzyan..."
                     sleep time: 25, unit: 'SECONDS'
 
-                    echo "=========================================================="
-                    echo "=> ⚙️ EXTRACTION LOGS BACKEND (Spring Boot - 100 lignes) <="
-                    echo "=========================================================="
-                    sh "docker logs --tail 100 mailos_backend_prod || true"
+                    echo "=> 🎯 AUTO-TRIGGER: Kan-diro appel l'API history bach n-provoquew l'erreur 500..."
+                    // Hna Jenkins kay-drb l'API b yeddou bash y-tiye7 l'Backend f l'Fakh
+                    sh "curl -s http://10.10.10.50:4778/api/history || true"
+                    
+                    sleep time: 3, unit: 'SECONDS'
 
                     echo "=========================================================="
-                    echo "=> 🌐 EXTRACTION LOGS FRONTEND (Next.js - 50 lignes) <="
+                    echo "=> ⚙️ EXTRACTION LOGS BACKEND (Stack Trace dyal l'Erreur) <="
                     echo "=========================================================="
-                    sh "docker logs --tail 50 mailos_frontend_prod || true"
+                    // Kan-jbdou akher 200 ster bash y-ban lina l'Java Exception kamla
+                    sh "docker logs --tail 200 mailos_backend_prod || true"
                 }
             }
         }
