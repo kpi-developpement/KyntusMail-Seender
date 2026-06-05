@@ -1,9 +1,8 @@
 import { Anomalie } from '../types/anomalie';
 
-// 🚨 THE FIX: Frappe Chirurgicale 3la Localhost
-// Kan-9raw l'URL mn l'environnement (Docker), awla kan-pointiw nichan 3la l'serveur f l'production.
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.10.10.50:4778';
-const API_URL = `${BASE_URL}/api`;
+// 🚨 THE FIX: Frappe Chirurgicale (Anti-Double API)
+// L'URL kay-weli nichan fih '/api' whda, swa mn Docker (NEXT_PUBLIC_API_URL) awla par défaut f l'local.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.10.10.50:4778/api';
 
 export const anomalieService = {
   getAll: async (): Promise<Anomalie[]> => {
