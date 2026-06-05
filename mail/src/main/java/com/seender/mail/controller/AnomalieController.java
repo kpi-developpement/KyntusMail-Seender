@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/anomalies")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Risk mitigation: kan-ssm7ou l Next.js y-tconnecta bla CORS errors
+@CrossOrigin(originPatterns = "*") // Risk mitigation: kan-ssm7ou l Next.js y-tconnecta bla CORS errors
 public class AnomalieController {
 
     private final AnomalieService anomalieService;
