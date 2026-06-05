@@ -11,9 +11,9 @@ services:
       - "4778:4778"
     environment:
       # 🚨 L'FIX L-KBIIR: Beddlna 'kyntus_db' b 'mailingdb' !
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.10.10.50:5432/mailingdb
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=waeloujdiastral481123456
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.10.10.50:5432/mailingdb?reWriteBatchedInserts=true
+      - SPRING_DATASOURCE_USERNAME=kyntus_user
+      - SPRING_DATASOURCE_PASSWORD=kyntus_password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SERVER_PORT=4778
       - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=500MB
