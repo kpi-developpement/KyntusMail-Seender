@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./mail 
+      dockerfile: Dockerfile
+    container_name: mailos_backend_prod
+    restart: unless-stopped
+    ports:
+      - "4778:4778"
+    environment:
+      # L'DB ba9a f 50
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.10.10.50:5432/mailingdb?reWriteBatchedInserts=true
+      - SPRING_DATASOURCE_USERNAME=kyntus_user
+      - SPRING_DATASOURCE_PASSWORD=kyntus_password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SERVER_PORT=4778
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=500MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=500MB
+      - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=2
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - mailos-network
+
+  frontend:
+    build:
+      context: ./frontend-mailer
+      dockerfile: Dockerfile
+      args:
+        # L'API dyal Backend daba kayna f 25
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.25:4778/api}
+    container_name: mailos_frontend_prod
+    restart: unless-stopped
+    ports:
+      - "1193:1193"
+    environment:
+      - PORT=1193
+    depends_on:
+      - backend
+    networks:
+      - mailos-network
+
+networks:
+  mailos-network:
+    driver: bridge

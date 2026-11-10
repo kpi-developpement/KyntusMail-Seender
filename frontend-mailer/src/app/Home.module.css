@@ -1,0 +1,118 @@
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Lumières Ambiantes (Elite Feel) */
+.goldOrbLarge {
+  position: absolute; top: 15%; left: 20%; width: 400px; height: 400px;
+  background: rgba(212, 175, 55, 0.15); filter: blur(120px); border-radius: 50%; z-index: -1;
+  animation: floatOrb 10s ease-in-out infinite;
+}
+.blueOrbLarge {
+  position: absolute; bottom: 10%; right: 20%; width: 500px; height: 500px;
+  background: rgba(30, 58, 138, 0.15); filter: blur(150px); border-radius: 50%; z-index: -1;
+  animation: floatOrb 12s ease-in-out infinite reverse;
+}
+
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -30px); }
+}
+
+.contentBox {
+  text-align: center;
+  max-width: 800px;
+  opacity: 1;
+  animation: eliteFadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--gold-pure);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 5rem;
+  font-weight: 300;
+  letter-spacing: -2px;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  font-weight: 300;
+  line-height: 1.6;
+  margin-bottom: 4rem;
+}
+
+.actionGrid {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+/* Boutons Elite */
+.btnElite {
+  background: linear-gradient(110deg, #d4af37 10%, #fef08a 30%, #d4af37 50%, #854d0e 100%);
+  background-size: 200% auto;
+  color: #000;
+  text-decoration: none;
+  padding: 1.5rem 3rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+}
+
+.btnElite:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
+  animation: shimmerSweep 3s linear infinite;
+}
+
+.btnDesc {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 800;
+  margin-bottom: 5px;
+  opacity: 0.8;
+}
+
+.btnSecondary {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--elite-border);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.btnSecondary .btnDesc { color: var(--gold-pure); }
+
+.btnSecondary:hover {
+  background: rgba(212, 175, 55, 0.05);
+  border-color: var(--gold-pure);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.05);
+  animation: none;
+}
