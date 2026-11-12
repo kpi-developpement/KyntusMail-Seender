@@ -12,9 +12,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -53,7 +56,8 @@ public class MailQueueService {
             }
 
             helper.setSubject("TR: Informations et accès - " + event.getPartenaireName());
-            helper.setText(finalMessage, false);
+            // Texte brut + HTML : en HTML le lien reste lisible même si Outlook (Safe Links) réécrit le href
+            helper.setText(finalMessage, toHtml(finalMessage));
 
             // Attachement Excel (Data partenaire)
             helper.addAttachment("Donnees_" + event.getPartenaireName() + ".xlsx", new ByteArrayResource(event.getExcelAttachment()));
@@ -71,6 +75,24 @@ public class MailQueueService {
             updateHistory(event.getHistoryId(), "ERREUR", e.getMessage());
             log.error("❌ Erreur d'envoi à {}", event.getEmailTo());
         }
+    }
+
+    private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s<>\"]+[^\\s<>\".,;:!?)]");
+
+    private static String toHtml(String text) {
+        StringBuilder html = new StringBuilder();
+        Matcher m = URL_PATTERN.matcher(text);
+        int last = 0;
+        while (m.find()) {
+            html.append(HtmlUtils.htmlEscape(text.substring(last, m.start())));
+            String url = HtmlUtils.htmlEscape(m.group());
+            html.append("<a href=\"").append(url).append("\">").append(url).append("</a>");
+            last = m.end();
+        }
+        html.append(HtmlUtils.htmlEscape(text.substring(last)));
+        String body = html.toString().replace("\r\n", "\n").replace("\n", "<br>\n");
+        return "<html><body style=\"font-family:Calibri,Arial,sans-serif;font-size:11pt;\">"
+                + body + "</body></html>";
     }
 
     private void updateHistory(Long historyId, String status, String error) {
