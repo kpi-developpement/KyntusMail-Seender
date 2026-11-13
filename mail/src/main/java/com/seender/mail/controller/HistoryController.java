@@ -11,7 +11,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/history")
 @RequiredArgsConstructor
-@CrossOrigin(originPatterns = "*")
 public class HistoryController {
 
     private final MailHistoryRepository mailHistoryRepository;

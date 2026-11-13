@@ -4,7 +4,9 @@ import com.seender.mail.entity.Anomalie;
 import com.seender.mail.entity.MailHistory;
 import com.seender.mail.event.PartnerMailEvent;
 import com.seender.mail.repository.AnomalieRepository;
+import com.seender.mail.config.MailSendingProperties;
 import com.seender.mail.repository.MailHistoryRepository;
+import com.seender.mail.util.MailSafety;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -31,10 +33,21 @@ public class ExcelProcessingService {
     private final AnomalieRepository anomalieRepository;
     private final MailHistoryRepository mailHistoryRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final MailSendingProperties props;
 
-    public void processAndDispatch(MultipartFile file, MultipartFile depFile, MultipartFile pdfFile, String messageTemplate) throws Exception {
+    /**
+     * @param manualCcEmails adresses saisies dans le formulaire (séparées par , ; ou espace).
+     *                       Elles s'ajoutent au CC par défaut et au mapping par département.
+     * @return le nombre d'emails mis en file d'attente.
+     */
+    public int processAndDispatch(MultipartFile file, MultipartFile depFile, MultipartFile pdfFile,
+                                  String messageTemplate, String manualCcEmails) throws Exception {
         String filename = file.getOriginalFilename();
-        if (filename == null) throw new RuntimeException("Fichier invalide.");
+        if (filename == null) throw new IllegalArgumentException("Fichier invalide.");
+
+        // CC communs à tous les partenaires : saisie du formulaire + CC par défaut de l'application.
+        Set<String> baseCc = new LinkedHashSet<>(MailSafety.parseEmailList(manualCcEmails));
+        baseCc.addAll(MailSafety.parseEmailList(props.getDefaultCc()));
 
         // Extraction du PDF (Optionnel)
         byte[] pdfBytes = null;
@@ -61,7 +74,7 @@ public class ExcelProcessingService {
         } else if (filename.toLowerCase().endsWith(".xlsx") || filename.toLowerCase().endsWith(".xls")) {
             parseExcel(file, headers, allDataRows);
         } else {
-            throw new RuntimeException("Format non supporté. Veuillez uploader un fichier .xlsx ou .csv");
+            throw new IllegalArgumentException("Format non supporté. Veuillez uploader un fichier .xlsx ou .csv");
         }
 
         // 4. Détection des colonnes (Adapté pour Ancien + Nouveau Format)
@@ -75,7 +88,7 @@ public class ExcelProcessingService {
         }
 
         if (partenaireCol == -1 || emailCol == -1) {
-            throw new RuntimeException("Les colonnes 'Entreprise/Partenaire' et 'Mail/Email' sont obligatoires.");
+            throw new IllegalArgumentException("Les colonnes 'Entreprise/Partenaire' et 'Mail/Email' sont obligatoires.");
         }
 
         // ==========================================
@@ -93,7 +106,8 @@ public class ExcelProcessingService {
         }
 
         // 5. Groupement par partenaire
-        Map<String, PartnerData> groupedData = new HashMap<>();
+        Map<String, PartnerData> groupedData = new LinkedHashMap<>();
+        Set<String> invalidEmails = new LinkedHashSet<>();
 
         for (List<String> rowData : allDataRows) {
             // Check minimum bounds for mandatory columns
@@ -103,6 +117,13 @@ public class ExcelProcessingService {
             String email = rowData.get(emailCol).trim();
 
             if (partenaire.isEmpty() || email.isEmpty()) continue;
+
+            // Une adresse invalide = un bounce, et les bounces sont la première cause de blacklistage.
+            if (!MailSafety.isValidEmail(email)) {
+                log.warn("Adresse ignorée (format invalide) pour le partenaire {}", partenaire);
+                invalidEmails.add(partenaire);
+                continue;
+            }
 
             // Remplacement dynamique Seulement si la colonne Anomalie existe
             String finalAnomalie = "";
@@ -139,7 +160,11 @@ public class ExcelProcessingService {
             PartnerData pData = entry.getValue();
 
             byte[] excelBytes = generateExcelFile(finalHeaders, pData.getRows());
-            String[] ccArray = pData.getCcEmails().toArray(new String[0]);
+
+            // CC final = mapping département + CC du formulaire + CC par défaut, dédoublonné et plafonné.
+            Set<String> allCc = new LinkedHashSet<>(pData.getCcEmails());
+            allCc.addAll(baseCc);
+            String[] ccArray = MailSafety.buildCcArray(allCc, pData.getEmail(), props.getMaxCc());
 
             // Sauvegarder f l'historique "EN ATTENTE"
             MailHistory history = MailHistory.builder()
@@ -154,6 +179,11 @@ public class ExcelProcessingService {
             // Sayfet l'Event b l'Id dyal l'historique + pdfBytes
             eventPublisher.publishEvent(new PartnerMailEvent(this, history.getId(), partenaireName, pData.getEmail(), ccArray, excelBytes, pdfBytes, messageTemplate));
         }
+
+        if (!invalidEmails.isEmpty()) {
+            log.warn("{} partenaire(s) ignoré(s) pour adresse invalide : {}", invalidEmails.size(), invalidEmails);
+        }
+        return groupedData.size();
     }
 
     // ==========================================
@@ -161,12 +191,14 @@ public class ExcelProcessingService {
     // ==========================================
 
     private Map<String, Set<String>> parseDepMapping(MultipartFile depFile) throws Exception {
-        Map<String, Set<String>> depMap = new HashMap<>();
+        Map<String, Set<String>> depMap = new LinkedHashMap<>();
         if (depFile == null || depFile.isEmpty()) return depMap;
 
         List<String> headers = new ArrayList<>();
         List<List<String>> rows = new ArrayList<>();
-        String filename = depFile.getOriginalFilename().toLowerCase();
+        String original = depFile.getOriginalFilename();
+        if (original == null) return depMap;
+        String filename = original.toLowerCase();
 
         if (filename.endsWith(".csv")) parseCsv(depFile, headers, rows);
         else if (filename.endsWith(".xlsx") || filename.endsWith(".xls")) parseExcel(depFile, headers, rows);
@@ -187,11 +219,9 @@ public class ExcelProcessingService {
             String emailStr = row.get(emailCol).trim();
             if(depVal.isEmpty() || emailStr.isEmpty()) continue;
 
-            String[] splitEmails = emailStr.split("[,;]");
-            depMap.putIfAbsent(depVal, new HashSet<>());
-            for(String e : splitEmails) {
-                if(!e.trim().isEmpty()) depMap.get(depVal).add(e.trim());
-            }
+            Set<String> valid = MailSafety.parseEmailList(emailStr);
+            if (valid.isEmpty()) continue;
+            depMap.computeIfAbsent(depVal, k -> new LinkedHashSet<>()).addAll(valid);
         }
         return depMap;
     }
@@ -279,7 +309,7 @@ public class ExcelProcessingService {
     private static class PartnerData {
         private String email;
         private List<List<String>> rows = new ArrayList<>();
-        private Set<String> ccEmails = new HashSet<>();
+        private Set<String> ccEmails = new LinkedHashSet<>();
 
         public PartnerData(String email) {
             this.email = email;

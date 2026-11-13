@@ -4,10 +4,18 @@ import React, { useState } from "react";
 import { excelService } from "../../services/api";
 import styles from "./MailingForm.module.css";
 
+// Adresse(s) mise(s) en copie par défaut sur chaque envoi.
+const DEFAULT_CC = ["zouheir.belhouji@kyntus.com"];
+
+const EMAIL_RE = /^[^\s@,;]+@[^\s@,;.]+(\.[^\s@,;.]+)+$/;
+
 export default function MailingForm() {
   const [file, setFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [depFile, setDepFile] = useState<File | null>(null);
+  const [ccList, setCcList] = useState<string[]>(DEFAULT_CC);
+  const [ccDraft, setCcDraft] = useState("");
+  const [ccError, setCcError] = useState<string | null>(null);
   const [message, setMessage] = useState(
     "Bonjour {{NOM_PARTENAIRE}},\n\nVeuillez trouver ci-joint vos accès et documents sécurisés.\n\nCordialement,\nL'équipe Kyntus."
   );
@@ -16,6 +24,43 @@ export default function MailingForm() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files.length > 0) setter(e.target.files[0]);
+  };
+
+  /** Ajoute une ou plusieurs adresses saisies (séparées par , ; ou espace). Retourne false si l'une est invalide. */
+  const commitCcDraft = (raw: string): boolean => {
+    const parts = raw.split(/[,;\s]+/).map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 0) {
+      setCcDraft("");
+      return true;
+    }
+    const invalid = parts.filter((p) => !EMAIL_RE.test(p));
+    if (invalid.length > 0) {
+      setCcError(`Adresse invalide : ${invalid[0]}`);
+      return false;
+    }
+    setCcList((prev) => {
+      const seen = new Set(prev.map((e) => e.toLowerCase()));
+      const added = parts.filter((p) => !seen.has(p.toLowerCase()));
+      return [...prev, ...added];
+    });
+    setCcDraft("");
+    setCcError(null);
+    return true;
+  };
+
+  const handleCcKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === "," || e.key === ";" || e.key === " " || e.key === "Tab") {
+      if (ccDraft.trim() === "") return;
+      e.preventDefault();
+      commitCcDraft(ccDraft);
+    } else if (e.key === "Backspace" && ccDraft === "" && ccList.length > 0) {
+      setCcList((prev) => prev.slice(0, -1));
+    }
+  };
+
+  const removeCc = (email: string) => {
+    setCcList((prev) => prev.filter((e) => e !== email));
+    setCcError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,21 +72,30 @@ export default function MailingForm() {
       return;
     }
 
+    // Une adresse encore dans le champ de saisie doit être prise en compte.
+    if (ccDraft.trim() !== "" && !commitCcDraft(ccDraft)) return;
+
     if (!message.includes("{{NOM_PARTENAIRE}}")) {
       const confirm = window.confirm("Le message ne contient pas la balise {{NOM_PARTENAIRE}}. Continuer ?");
       if (!confirm) return;
     }
 
+    const ccToSend = ccDraft.trim() !== ""
+      ? [...ccList, ...ccDraft.split(/[,;\s]+/).map((p) => p.trim()).filter(Boolean)]
+      : ccList;
+
     setIsLoading(true);
     try {
       // 🚨 Passina l'pdfFile hna bach y-mchi f la requête POST
-      const responseMsg = await excelService.uploadAndSend(file, message, depFile, pdfFile);
+      const responseMsg = await excelService.uploadAndSend(file, message, depFile, pdfFile, ccToSend.join(","));
       setFeedback({ type: "success", text: responseMsg });
-      
+
       // Reset
       setFile(null);
       setPdfFile(null);
       setDepFile(null);
+      setCcList(DEFAULT_CC);
+      setCcDraft("");
     } catch (error: any) {
       setFeedback({ type: "error", text: error.message });
     } finally {
@@ -116,6 +170,60 @@ export default function MailingForm() {
             <input id="depUpload" type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleFileChange(e, setDepFile)} className={styles.hiddenInput} />
           </label>
 
+        </div>
+
+        {/* CARTE : DESTINATAIRES EN COPIE (CC) */}
+        <div className={styles.ccSection}>
+          <div className={styles.editorHeader}>
+            <span className={styles.editorLabel}>Destinataires en copie (CC)</span>
+            <span className={styles.ccCount}>
+              {ccList.length} adresse{ccList.length > 1 ? "s" : ""}
+            </span>
+          </div>
+
+          <div className={`${styles.ccBox} ${ccError ? styles.ccBoxError : ""}`}>
+            {ccList.map((email) => (
+              <span key={email} className={styles.chip}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                {email}
+                <button
+                  type="button"
+                  className={styles.chipRemove}
+                  onClick={() => removeCc(email)}
+                  aria-label={`Retirer ${email}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+
+            <input
+              type="text"
+              className={styles.ccInput}
+              value={ccDraft}
+              placeholder={ccList.length === 0 ? "nom@kyntus.com" : "Ajouter une adresse…"}
+              onChange={(e) => {
+                setCcDraft(e.target.value);
+                if (ccError) setCcError(null);
+              }}
+              onKeyDown={handleCcKeyDown}
+              onBlur={() => { if (ccDraft.trim() !== "") commitCcDraft(ccDraft); }}
+              onPaste={(e) => {
+                const text = e.clipboardData.getData("text");
+                if (/[,;\s]/.test(text)) {
+                  e.preventDefault();
+                  commitCcDraft(text);
+                }
+              }}
+            />
+          </div>
+
+          <div className={ccError ? styles.ccErrorText : styles.ccHint}>
+            {ccError ?? "Entrée, virgule ou point-virgule pour valider. Ces adresses sont en copie de chaque email, en plus du mapping CC par département."}
+          </div>
         </div>
 
         {/* EDITOR DE MESSAGE */}

@@ -139,6 +139,119 @@
 .hiddenInput { display: none; }
 
 /* =========================================
+   CC — DESTINATAIRES EN COPIE (Chips)
+   ========================================= */
+.ccSection {
+  grid-column: 1 / -1;
+  margin-bottom: 3rem;
+  animation: eliteFadeUp 0.6s backwards 0.35s;
+}
+
+.ccCount {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+}
+
+.ccBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 64px;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+  cursor: text;
+}
+
+.ccBox:focus-within {
+  border-color: var(--gold-pure);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.12), inset 0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+.ccBoxError {
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.1), inset 0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.45rem 0.5rem 0.45rem 0.85rem;
+  border-radius: 20px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--gold-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: 100%;
+  animation: elite3DFade 0.3s ease;
+}
+
+.chip svg { opacity: 0.7; flex-shrink: 0; }
+
+.chipRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--gold-light);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chipRemove:hover {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  transform: scale(1.12);
+}
+
+.ccInput {
+  flex: 1 1 200px;
+  min-width: 180px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e2e8f0;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+}
+
+.ccInput::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+.ccHint {
+  margin-top: 0.75rem;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.ccErrorText {
+  margin-top: 0.75rem;
+  color: #f87171;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* =========================================
    TEXTAREA (Code Editor Style)
    ========================================= */
 .editorSection {

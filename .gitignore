@@ -1,0 +1,9 @@
+# Secrets : jamais dans le dépôt
+.env
+.env.local
+*.env
+!.env.example
+
+# Divers
+.DS_Store
+*.log

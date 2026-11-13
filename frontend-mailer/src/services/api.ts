@@ -25,7 +25,13 @@ export const anomalieService = {
 };
 
 export const excelService = {
-  uploadAndSend: async (file: File, message: string, depFile?: File | null, pdfFile?: File | null): Promise<string> => {
+  uploadAndSend: async (
+    file: File,
+    message: string,
+    depFile?: File | null,
+    pdfFile?: File | null,
+    ccEmails?: string
+  ): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("message", message);
@@ -34,6 +40,9 @@ export const excelService = {
     }
     if (pdfFile) {
       formData.append("pdfFile", pdfFile);
+    }
+    if (ccEmails && ccEmails.trim() !== "") {
+      formData.append("ccEmails", ccEmails);
     }
 
     const response = await fetch(`${API_URL}/excel/upload-and-send`, {
