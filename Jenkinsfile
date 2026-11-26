@@ -56,7 +56,7 @@ pipeline {
 
                     echo "=> 🎯 AUTO-TRIGGER: Kan-diro appel l'API history bach n-provoquew l'erreur 500..."
                     // Hna Jenkins kay-drb l'API b yeddou bash y-tiye7 l'Backend f l'Fakh
-                    sh "curl -s http://10.10.10.50:4778/api/history || true"
+                    sh "curl -s http://10.10.10.25:4778/api/history || true"
                     
                     sleep time: 3, unit: 'SECONDS'
 
@@ -86,8 +86,8 @@ pipeline {
         success {
             echo "========================================================"
             echo "✅ DÉPLOIEMENT MAILOS RÉUSSI (ISOLATION 100%) !"
-            echo "🌐 Frontend: http://10.10.10.50:1193"
-            echo "⚙️ Backend:  http://10.10.10.50:4778"
+            echo "🌐 Frontend: http://10.10.10.25:1193"
+            echo "⚙️ Backend:  http://10.10.10.25:4778"
             echo "🛡️ Base de données propre: mailingdb"
             echo "========================================================"
         }

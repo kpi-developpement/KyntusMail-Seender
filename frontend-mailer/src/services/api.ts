@@ -2,7 +2,7 @@ import { Anomalie } from '../types/anomalie';
 
 // 🚨 THE FIX: Frappe Chirurgicale (Anti-Double API)
 // L'URL kay-weli nichan fih '/api' whda, swa mn Docker (NEXT_PUBLIC_API_URL) awla par défaut f l'local.
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.10.10.50:4778/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.10.10.25:4778/api';
 
 export const anomalieService = {
   getAll: async (): Promise<Anomalie[]> => {

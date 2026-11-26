@@ -33,7 +33,7 @@ services:
       context: ./frontend-mailer
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.50:4778/api}
+        - NEXT_PUBLIC_API_URL=${API_URL:-http://10.10.10.25:4778/api}
     container_name: mailos_frontend_prod
     restart: unless-stopped
     ports:
