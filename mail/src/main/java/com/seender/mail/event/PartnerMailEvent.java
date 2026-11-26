@@ -12,8 +12,18 @@ public class PartnerMailEvent extends ApplicationEvent {
     private final String[] ccEmails;
     private final byte[] excelAttachment;
     private final String messageTemplate;
+    private final String subject;
+    private final String attachmentName;
 
+    // Flux "Anomalies" (comportement historique)
     public PartnerMailEvent(Object source, Long historyId, String partenaireName, String emailTo, String[] ccEmails, byte[] excelAttachment, String messageTemplate) {
+        this(source, historyId, partenaireName, emailTo, ccEmails, excelAttachment, messageTemplate,
+                "TR: Rapport des anomalies - " + partenaireName,
+                "Anomalies_" + partenaireName + ".xlsx");
+    }
+
+    // Flux générique (ex: envoi des comptes / identifiants)
+    public PartnerMailEvent(Object source, Long historyId, String partenaireName, String emailTo, String[] ccEmails, byte[] excelAttachment, String messageTemplate, String subject, String attachmentName) {
         super(source);
         this.historyId = historyId;
         this.partenaireName = partenaireName;
@@ -21,5 +31,7 @@ public class PartnerMailEvent extends ApplicationEvent {
         this.ccEmails = ccEmails;
         this.excelAttachment = excelAttachment;
         this.messageTemplate = messageTemplate;
+        this.subject = subject;
+        this.attachmentName = attachmentName;
     }
 }

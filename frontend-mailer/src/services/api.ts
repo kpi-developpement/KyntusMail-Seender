@@ -48,6 +48,27 @@ export const excelService = {
   },
 };
 
+export const accountService = {
+  // Envoi des comptes : chaque ligne de l'Excel reçoit ses propres identifiants
+  uploadAndSend: async (file: File, subject: string, message: string): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("subject", subject);
+    formData.append("message", message);
+
+    const response = await fetch(`${API_URL}/accounts/upload-and-send`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Erreur lors de l'envoi des comptes");
+    }
+    return response.text();
+  },
+};
+
 export interface MailHistory {
   id: number;
   partenaire: string;

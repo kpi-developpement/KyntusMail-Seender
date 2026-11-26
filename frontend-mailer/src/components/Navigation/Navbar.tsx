@@ -44,6 +44,9 @@ export default function Navbar() {
             <li className={styles.menuItem} style={{ animationDelay: "0.4s" }}>
               <Link href="/mailing" className={styles.link}>Déploiement</Link>
             </li>
+            <li className={styles.menuItem} style={{ animationDelay: "0.5s" }}>
+              <Link href="/comptes" className={styles.link}>Comptes</Link>
+            </li>
           </ul>
         </div>
       </nav>

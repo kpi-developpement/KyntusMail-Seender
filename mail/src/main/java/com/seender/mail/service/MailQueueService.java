@@ -52,9 +52,9 @@ public class MailQueueService {
                 helper.setCc(event.getCcEmails());
             }
 
-            helper.setSubject("TR: Rapport des anomalies - " + event.getPartenaireName());
+            helper.setSubject(event.getSubject());
             helper.setText(finalMessage, false);
-            helper.addAttachment("Anomalies_" + event.getPartenaireName() + ".xlsx", new ByteArrayResource(event.getExcelAttachment()));
+            helper.addAttachment(event.getAttachmentName(), new ByteArrayResource(event.getExcelAttachment()));
 
             mailSender.send(message);
             updateHistory(event.getHistoryId(), "ENVOYE", null); // Mail daz mzyan
